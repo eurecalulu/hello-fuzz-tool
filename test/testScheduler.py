@@ -25,10 +25,36 @@ def test_splice():
     print(6, Splice("", "1"))
     print(7, Splice("", ""))
 
+def test_char_change():
+    print(char_change("123456789", 1))
+    print(char_change("123456789", 2))
+
+def test_bit_revert():
+    print(bit_revert("12345", 5))
+
+def test_case_conversion():
+    print(case_conversion("aBcde", 0))
+    print(case_conversion("aBcde", 1))
+    print(case_conversion("aBcde", 2))
+
+def test_repeat_pattern():
+    print(repeat_pattern("123456789", 1, 9))
+    print(repeat_pattern("123456789", 2, 9))
+    print(repeat_pattern("123456789", 2, 8))
+
+def test_boundary_change():
+    print(boundary_change("123456789", 0))
+    print(boundary_change("123456789", 1))
+    print(boundary_change("123456789", 2))
+
+
 def test_schedule():
-    print(schedule(["0123456789"], 10))
+    print(schedule(["0123456789"], 1000))
 
 if __name__ == "__main__":
+    test_schedule()
     # test_char_del()
-    # test_schedule()
-    test_char_flip()
+    # test_char_flip()
+    # test_case_conversion()
+    # test_repeat_pattern()
+    # test_boundary_change()
