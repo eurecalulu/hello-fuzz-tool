@@ -27,7 +27,6 @@ def run_java_command(class_name, seed):
     java_command = ['java', class_name, seed]
     # 启动新进程并重定向输出流和错误流
     process = subprocess.Popen(java_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     # 读取输出流和错误流
     output, error = process.communicate()
     print(output)
@@ -38,7 +37,7 @@ def run_java_command(class_name, seed):
 if __name__ == "__main__":
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
     # 插装
-    tmp = open("seeds.txt", encoding="utf-8").read().split('\n')
+    tmp = open("./seeds.txt", encoding="utf-8").read().split('\n')
     os.system(
         "java -jar ..\hellofuzzing-instrument\\target\hellofuzzing-instrument-1.0-SNAPSHOT.jar " + ".\Target1.java ")
     compile_java_source(java_path)
@@ -49,6 +48,7 @@ if __name__ == "__main__":
 
     while True:
         seeds = schedule(circle, 1)
+        seeds[0] = "\"" + seeds[0] + "\""
         print(seeds)
         perc = run_java_command(class_name, seeds[0])
         if perc > init_perc:  # 更新队列

@@ -9,6 +9,15 @@ def choose_seeds(seeds):
     """
     return seeds[0], seeds[0]
 
+def random_chr():
+    """
+    随机生成字符
+    :return: 字符
+    """
+    x = random.randint(1, 127)
+    if(x == 92): return "\\"
+    else: return chr(x)
+
 def schedule(seeds, times):
     """
     schedule模糊测试调度器
@@ -68,7 +77,7 @@ def char_flip(input_str, n, L, S):
 
         # +n
         for idx in range(S):
-            temp_list[idx] = chr(ord(temp_list[idx]) + n)
+            temp_list[idx] = chr((ord(temp_list[idx]) + n) % 127 + 1) # 不需要空字符
         
         # 替换字符串
         input_list[pos: pos + S] = temp_list
@@ -95,7 +104,7 @@ def char_ins(input_str, n, K):
         ins_pos = random.randint(0, str_len)
     
         # 插入字符
-        ins_chars = [chr(random.randint(0, 256)) for _ in range(K)]  # 随机生成小写字母作为插入字符
+        ins_chars = [random_chr() for _ in range(K)]  # 随机生成小写字母作为插入字符
         input_str = input_str[:ins_pos] + "".join(ins_chars) + input_str[ins_pos:]
 
     return input_str
@@ -110,7 +119,6 @@ def char_del(input_str, n, K):
     :param K: 字符个数
     :return: 删除字符后的字符串
     """
-
     if(n * K >= len(input_str)):
         return ""
 

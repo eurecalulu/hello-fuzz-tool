@@ -1,13 +1,11 @@
 import sys
 sys.path.append(".")
 
-import pytest
-from unittest.mock import MagicMock
 from src.scheduler import *
 
 
 def test_char_flip():
-    print(char_flip("0123456789", 2000, 10, 3))   
+    print(char_flip("0123456789", 1, 10, 3))   
 
 def test_char_del():
     print(char_del("0123456789", 3, 2))
@@ -33,4 +31,4 @@ def test_schedule():
 if __name__ == "__main__":
     # test_char_del()
     # test_schedule()
-    test_havoc()
+    test_char_flip()
