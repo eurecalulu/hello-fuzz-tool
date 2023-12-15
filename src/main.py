@@ -36,21 +36,35 @@ def run_java_command(class_name, seed):
 
 if __name__ == "__main__":
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
-    # 插装
-    tmp = open("./seeds.txt", encoding="utf-8").read().split('\n')
+    
+    # 程序插装
     os.system(
         "java -jar ..\hellofuzzing-instrument\\target\hellofuzzing-instrument-1.0-SNAPSHOT.jar " + ".\Target1.java ")
+    
+    # 编译程序
     compile_java_source(java_path)
+    
+    # 种子队列
+    seeds = open("./seeds.txt", encoding="utf-8").read().split('\n')
+    
+    # 种子覆盖率
+    weight = []
+    for seed in seeds:
+        weight.append(run_java_command(class_name, seed))
 
     # 开始循环
     init_perc = 0.0
-    circle = tmp    # 种子队列
 
     while True:
-        seeds = schedule(circle, 1)
-        seeds[0] = "\"" + seeds[0] + "\""
-        print(seeds)
-        perc = run_java_command(class_name, seeds[0])
+        # 生成输入
+        input_list = schedule(seeds, weight, 1)
+        print(input_list)
+        
+        # 计算覆盖率
+        perc = run_java_command(class_name, input_list[0])
+        
+        # 更新最优覆盖率
         if perc > init_perc:  # 更新队列
             init_perc = perc
-            circle.append(seeds[0])
+            seeds.append(input_list[0])
+            weight.append(perc)

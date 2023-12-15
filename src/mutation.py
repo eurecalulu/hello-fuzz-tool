@@ -1,5 +1,6 @@
 import random
 from typing import Any
+import string
 
 # 变异算子会使用到的参数
 class Param:
@@ -25,9 +26,11 @@ def random_chr():
     随机生成字符
     :return: 字符
     """
-    x = random.randint(1, 127)
-    if(x == 92): return "\\"
-    else: return chr(x)
+    return random.choice(string.ascii_letters)
+
+    # x = random.randint(1, 127)
+    # if(x == 92): return "\\"
+    # else: return chr(x)
 
 def char_flip(param):
     """
@@ -140,7 +143,7 @@ def Havoc(param):
         2: char_del
     }
 
-    times = random.randint(0, 100)
+    times = random.randint(0, 10)
     for _ in range(times):
         # 选择操作
         op = random.randint(0, 2)
@@ -221,8 +224,10 @@ def bit_revert(param):
 
     posList = random.sample(range(len(input_str)), n)
     for pos in posList:
+        if(ord(input_list[pos]) == 127):
+            continue
         input_list[pos] = chr(127 - ord(input_list[pos]))
-
+    
     return "".join(input_list)
 
 def repeat_pattern(param):
@@ -309,3 +314,22 @@ def boundary_change(param):
         input_str = random_chr() + input_str + random_chr()
 
     return input_str
+
+def all_to_alpha(param):
+    """
+    all_to_alpha模糊测试算子，将字符串中所有字符转换为字母
+    :param input_str: 输入字符串
+    :return: 转换后的字符串
+    """
+    input_str = param.input_str_1
+    if(len(input_str) == 0):
+        print("input string is empty")
+        return ""
+    
+    input_list = list(input_str)
+    for idx in range(len(input_list)):
+        if(input_str[idx].isalpha()):
+            continue
+        input_list[idx] = random.choice(string.ascii_letters)
+
+    return "".join(input_list)
