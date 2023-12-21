@@ -6,17 +6,17 @@ import random
 from src.mutation import *
 
 
-def choose_seeds(seeds, weight):
+def choose_seeds(seeds, weights):
     """
     选择种子列表
     :param seeds: 种子列表
     :param weight: 种子选择概率
     :return: 两个种子
     """
-    x = random.choices(seeds, weights=weight, k=2)
+    x = random.choices(seeds, weights=weights, k=2)
     return x[0], x[1]
 
-def schedule(seeds, weight, times):
+def schedule(seeds, weights, times):
     """
     schedule模糊测试调度器
     :param seeds: 种子
@@ -26,37 +26,48 @@ def schedule(seeds, weight, times):
     """
 
     param = Param()
-    param.input_str_1, param.input_str_2 = choose_seeds(seeds, weight)
-    
+    param.input_str_1, param.input_str_2 = choose_seeds(seeds, weights)
+
     # 定义函数映射
-    function_map = {
-        0: char_flip,
-        1: char_ins,
-        2: char_del,
-        3: Havoc,
-        4: Splice,
-        5: char_change,
-        6: bit_revert,
-        7: repeat_pattern,
-        8: case_conversion,
-        9: boundary_change,
-        10: all_to_alpha
-    }
+    not_empty_function_list = [
+        char_ins,
+        Havoc,
+        Splice,
+        char_change,
+        repeat_pattern,
+        case_conversion,
+        boundary_change,
+    ]
+
+    function_list = [
+        char_flip,
+        char_ins,
+        char_del,
+        Havoc,
+        Splice,
+        char_change,
+        repeat_pattern,
+        case_conversion,
+        boundary_change,
+    ]
 
     result = []
     for _ in range(times):
         # 选择操作
-        op = random.randint(0, len(function_map) - 1)
+        if(param.input_str_1 == ""):
+            op = random.choice(not_empty_function_list)
+        else:
+            op = random.choice(function_list)
 
         # 参数设置
-        param.n = random.randint(1, 10)
-        param.L = random.randint(1, 10)
+        param.n = random.randint(1, max(1, len(param.input_str_1)))
+        param.L = random.randint(param.n, param.n * 3)
         param.S = random.randint(1, max(1, len(param.input_str_1)))
-        param.K = random.randint(1, 10)
+        param.K = random.randint(1, max(1, len(param.input_str_1)))
         param.mode = random.randint(0, 2)
 
         # 创建上下文
-        context = Context(function_map[op])
+        context = Context(op)
         
         # 调用变异函数并保存结果
         result.append(context.mutation(param))
@@ -64,4 +75,4 @@ def schedule(seeds, weight, times):
     return list(set(result))
 
 if __name__ == "__main__":
-    choose_seeds(seeds=["hello", "world", "1", "2"], weight=[1, 2, 3, 4])
+    print(schedule(["abcABC"], [1], 1000))

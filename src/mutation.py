@@ -1,5 +1,9 @@
+import sys
+sys.path.append("..")
+# sys.path.append("")
+
 import random
-from typing import Any
+from config.config import CANDIDATES
 import string
 
 # 变异算子会使用到的参数
@@ -11,26 +15,50 @@ class Param:
     S = 0
     K = 0
     mode = 0
+    candidates = []
 
 # 策略模式的上下文
 class Context:
     def __init__(self, strategy):
         self.mStrategy = strategy
-    
+        
+    def verify_input(self, input_str):
+        return all(c in CANDIDATES for c in input_str)
+
     def mutation(self, param):
+        param.candidates = CANDIDATES
+        
+        if(self.verify_input(param.input_str_1) == False):
+            raise Exception("Context verify input_str_1 failed")
+
+        if(self.verify_input(param.input_str_2) == False):
+            raise Exception("Context verify input_str_2 failed")
+
         return self.mStrategy(param)
 
 
-def random_chr():
+def random_chr(candidates):
     """
     随机生成字符
     :return: 字符
     """
-    return random.choice(string.ascii_letters)
+    return random.choice(candidates)
 
-    # x = random.randint(1, 127)
-    # if(x == 92): return "\\"
-    # else: return chr(x)
+def char_plus_n(char, candidates, n):
+    """
+    先在candidates里找char，给char的序号+n，然后返回candidates中的字符
+    :param char: 字符
+    :param candidates: 候选字符列表
+    :param n: 增量
+    :return: 字符
+    """
+    if(char not in candidates):
+        raise Exception("char not in candidates")
+    
+    idx = candidates.index(char)
+    new_idx = (idx + n) % len(candidates)
+    return candidates[new_idx]
+
 
 def char_flip(param):
     """
@@ -44,15 +72,15 @@ def char_flip(param):
     input_str, n, L, S = param.input_str_1, param.n, param.L, param.S
 
     if(input_str == ""):
-        print("input_str should not be empty")
+        print("char_flip input_str should not be empty")
         return input_str
 
     if(len(input_str) < S):
-        print("S should be less than the length of input string")
+        print("char_flip S should be less than the length of input string")
         return input_str
     
     if(S == 0):
-        print("S should be greater than 0")
+        print("char_flip S should be greater than 0")
         return input_str
 
     input_list = list(input_str)
@@ -69,7 +97,7 @@ def char_flip(param):
 
         # +n
         for idx in range(S):
-            temp_list[idx] = chr((ord(temp_list[idx]) + n) % 127 + 1) # 不需要空字符
+            temp_list[idx] = char_plus_n(temp_list[idx], param.candidates, n)
         
         # 替换字符串
         input_list[pos: pos + S] = temp_list
@@ -84,20 +112,35 @@ def char_ins(param):
     :param input_str: 输入字符串
     :param n: 位置数
     :param K: 字符个数
+    :param candiates: 候选字符列表
     :return: 插入字符后的字符串
     """
-    input_str, n, K = param.input_str_1, param.n, param.K
+    input_str, n, K, candiates = param.input_str_1, param.n, param.K, param.candidates
 
-    for _ in range(n):
+    if(len(input_str) < n):
+        # print("n should be less than the length of input string")
+        n = len(input_str)
+        # print("n is set to %d")
+
+    if(input_str == ""):
+        ins_pos_list = [0]
+    else:
+        ins_pos_list = random.choices(range(len(input_str) + 1), k=n)
+
+
+
+    for _ in range(K):
+        # 要插入字符
+        ins_chars = random_chr(candiates)  # 随机生成小写字母作为插入字符
+        
         # 获取字符串长度
         str_len = len(input_str)
 
         # 计算插入的位置
-        ins_pos = random.randint(0, str_len)
-    
+        ins_pos = random.choice(ins_pos_list)
+
         # 插入字符
-        ins_chars = [random_chr() for _ in range(K)]  # 随机生成小写字母作为插入字符
-        input_str = input_str[:ins_pos] + "".join(ins_chars) + input_str[ins_pos:]
+        input_str = input_str[:ins_pos] + ins_chars + input_str[ins_pos:]
 
     return input_str
 
@@ -111,19 +154,32 @@ def char_del(param):
     """
     input_str, n, K = param.input_str_1, param.n, param.K
 
-    if(n * K >= len(input_str)):
-        return ""
 
-    for _ in range(n):
+    if(input_str == ""):
+        print("char_del input_str should not be empty")
+        return input_str
+    
+    if(len(input_str) <= K):
+        return input_str
+
+    if(n <= len(input_str)):
+        del_pos_list = random.choices(range(len(input_str)), k=n)
+    else:
+        del_pos_list = [x for x in range(len(input_str))]
+
+    for _ in range(K):
         # 获取字符串长度
         str_len = len(input_str)
 
         # 计算删除的位置
-        del_pos = random.randint(0, str_len - K)
-    
-        # 删除字符
-        input_str = input_str[:del_pos] + input_str[del_pos + K:]
+        del_pos = random.choice(del_pos_list)
 
+        if(del_pos >= str_len):
+            del_pos = str_len - 1
+
+        # 删除字符
+        input_str = input_str[:del_pos] + input_str[del_pos+1:]
+        
     return input_str
 
 def Havoc(param):
@@ -137,16 +193,21 @@ def Havoc(param):
     mParam = Param()
 
     # 定义函数映射
-    function_map = {
-        0: char_flip,
-        1: char_ins,
-        2: char_del
-    }
+    function_list = [
+        char_flip,
+        char_ins,
+        char_del
+    ]
+
+    
 
     times = random.randint(0, 10)
     for _ in range(times):
         # 选择操作
-        op = random.randint(0, 2)
+        if(input_str == ""):
+            op = char_ins
+        else:
+            op = random.choice(function_list)
 
         # 参数设置
         mParam.input_str_1 = input_str
@@ -156,7 +217,7 @@ def Havoc(param):
         mParam.K = random.randint(1, 10)
 
         # 创建上下文
-        context = Context(function_map[op])
+        context = Context(op)
 
         # 调用变异函数并保存结果
         input_str = context.mutation(mParam)
@@ -191,9 +252,10 @@ def char_change(param):
     char_change模糊测试算子，挑选n个位置将其字符替换为随机字符
     :param input_str: 输入字符串
     :param n: 位置数
+    :param candiates: 候选字符列表
     :return: 替换后的字符串
     """
-    input_str, n = param.input_str_1, param.n
+    input_str, n, candiates = param.input_str_1, param.n, param.candidates
 
     input_list = list(input_str)
 
@@ -204,59 +266,60 @@ def char_change(param):
         pos = random.randint(0, list_len - 1)
 
         # 替换字符
-        input_list[pos] = random_chr()
+        input_list[pos] = random_chr(candiates)
 
     return "".join(input_list)
 
-def bit_revert(param):
-    """
-    bit_revert模糊测试算子，挑选n个位置进行比特翻转
-    :input input_str: 输入字符串
-    :param n: 位置数
-    :return: 比特翻转后的字符串
-    """
-    input_str, n = param.input_str_1, param.n
+# def bit_revert(param):
+#     """
+#     bit_revert模糊测试算子，挑选n个位置进行比特翻转
+#     :input input_str: 输入字符串
+#     :param n: 位置数
+#     :return: 比特翻转后的字符串
+#     """
+#     input_str, n = param.input_str_1, param.n
 
-    if(n >= len(input_str)):
-        n = len(input_str)
+#     if(n >= len(input_str)):
+#         n = len(input_str)
 
-    input_list = list(input_str)
+#     input_list = list(input_str)
 
-    posList = random.sample(range(len(input_str)), n)
-    for pos in posList:
-        if(ord(input_list[pos]) == 127):
-            continue
-        input_list[pos] = chr(127 - ord(input_list[pos]))
+#     posList = random.sample(range(len(input_str)), n)
+#     for pos in posList:
+#         if(ord(input_list[pos]) == 127):
+#             continue
+#         input_list[pos] = chr(127 - ord(input_list[pos]))
     
-    return "".join(input_list)
+#     return "".join(input_list)
 
 def repeat_pattern(param):
     """
     repeat_pattern模糊测试算子，重复输入字符串n次
     :param input_str: 输入字符串
     :param n: 重复次数
-    :param L: 重复模式长度
+    :param S: 重复模式长度
     :return: 重复后的字符串
     """
-    input_str, n, L = param.input_str_1, param.n, param.L
+    input_str, n, S = param.input_str_1, param.n, param.S
 
     if(n < 1):
         print("n should be greater than 0")
         return input_str
     
-    if(L < 1):
+    if(S < 1):
         print("L should be greater than 0")
         return input_str
 
-    if(L > len(input_str)):
+    if(S > len(input_str)):
         print("L should be less than the length of input string")
-        return input_str
+        S = len(input_str)
+        print("L is set to be %d")
 
     # 随机选择一个位置插入重复模式
-    insertion_point = random.randint(0, len(input_str) - L)
+    insertion_point = random.randint(0, len(input_str) - S)
 
     # 提取重复模式
-    pattern = input_str[insertion_point: insertion_point + L]
+    pattern = input_str[insertion_point: insertion_point + S]
 
     # 在输入字符串中插入重复模式
     input_str = input_str[:insertion_point] + pattern * n + input_str[insertion_point:]
@@ -298,38 +361,40 @@ def boundary_change(param):
     bounary_change模糊测试算子，将字符串的边界字符添加随机字符
     :param input_str: 输入字符串
     :param mode: 边界模式。0为首字符，1为尾字符，2为首尾字符
+    :param candiates: 随机字符集
     :return: 添加边界字符后的字符串
     """
-    input_str, mode = param.input_str_1, param.mode
+    input_str, mode, candidates = param.input_str_1, param.mode, param.candidates
+
 
     if(mode not in [0, 1, 2]):
         print("mode should be 0, 1 or 2")
         return input_str
 
     if mode == 0:
-        input_str = random_chr() + input_str
+        input_str = random_chr(candidates) + input_str
     elif mode == 1:
-        input_str = input_str + random_chr()
+        input_str = input_str + random_chr(candidates)
     elif mode == 2:
-        input_str = random_chr() + input_str + random_chr()
+        input_str = random_chr(candidates) + input_str + random_chr(candidates)
 
     return input_str
 
-def all_to_alpha(param):
-    """
-    all_to_alpha模糊测试算子，将字符串中所有字符转换为字母
-    :param input_str: 输入字符串
-    :return: 转换后的字符串
-    """
-    input_str = param.input_str_1
-    if(len(input_str) == 0):
-        print("input string is empty")
-        return ""
+# def all_to_alpha(param):
+#     """
+#     all_to_alpha模糊测试算子，将字符串中所有字符转换为字母
+#     :param input_str: 输入字符串
+#     :return: 转换后的字符串
+#     """
+#     input_str = param.input_str_1
+#     if(len(input_str) == 0):
+#         print("input string is empty")
+#         return ""
     
-    input_list = list(input_str)
-    for idx in range(len(input_list)):
-        if(input_str[idx].isalpha()):
-            continue
-        input_list[idx] = random.choice(string.ascii_letters)
+#     input_list = list(input_str)
+#     for idx in range(len(input_list)):
+#         if(input_str[idx].isalpha()):
+#             continue
+#         input_list[idx] = random.choice(string.ascii_letters)
 
-    return "".join(input_list)
+#     return "".join(input_list)

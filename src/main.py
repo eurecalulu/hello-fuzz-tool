@@ -29,8 +29,9 @@ def run_java_command(class_name, seed):
     process = subprocess.Popen(java_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # 读取输出流和错误流
     output, error = process.communicate()
-    print(output)
-    print(get_percent(output))
+    # print(output)
+    # print(error)
+    # print(get_percent(output))
     return get_percent(output)
 
 
@@ -55,10 +56,12 @@ if __name__ == "__main__":
     # 开始循环
     init_perc = 0.0
 
+    print("初始种子", seeds, weight)
+
     while True:
         # 生成输入
         input_list = schedule(seeds, weight, 1)
-        print(input_list)
+        # print(input_list)
         
         # 计算覆盖率
         perc = run_java_command(class_name, input_list[0])
@@ -68,3 +71,5 @@ if __name__ == "__main__":
             init_perc = perc
             seeds.append(input_list[0])
             weight.append(perc)
+
+            print(seeds, weight)
