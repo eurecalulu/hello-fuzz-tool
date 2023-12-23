@@ -1,6 +1,6 @@
 import subprocess
 import os
-from scheduler import choose_seeds, schedule
+from scheduler import schedule, mutation
 
 java_path = ".//Target1HelloFuzzing.java"
 class_name = "Target1HelloFuzzing"
@@ -49,19 +49,21 @@ if __name__ == "__main__":
     seeds = open("./seeds.txt", encoding="utf-8").read().split('\n')
     
     # 种子覆盖率
-    weight = []
+    weights = []
     for seed in seeds:
-        weight.append(run_java_command(class_name, seed))
+        weights.append(run_java_command(class_name, seed))
 
     # 开始循环
     init_perc = 0.0
 
-    print("初始种子", seeds, weight)
+    print("初始种子", seeds, weights)
 
     while True:
-        # 生成输入
-        input_list = schedule(seeds, weight, 1)
-        # print(input_list)
+        # 种子调度
+        input_str_1, input_str_2 = schedule(seeds, weights)
+
+        # 变异
+        input_list = mutation(input_str_1, input_str_2, 1)
         
         # 计算覆盖率
         perc = run_java_command(class_name, input_list[0])
@@ -70,6 +72,6 @@ if __name__ == "__main__":
         if perc > init_perc:  # 更新队列
             init_perc = perc
             seeds.append(input_list[0])
-            weight.append(perc)
+            weights.append(perc)
 
-            print(seeds, weight)
+            print(seeds, weights)
