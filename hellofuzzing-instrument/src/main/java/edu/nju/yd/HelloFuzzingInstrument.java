@@ -46,12 +46,14 @@ public class HelloFuzzingInstrument {
         // get all branches
         Branches branches = new Branches(cu);
         // insert char[] cov_info declaration
+        IOUtil.consoleMessage("insert char[] cov_info declaration...");
         insertCovInfoArray(branches.getNum());
         // insert statement that modify cov_info
+        IOUtil.consoleMessage("insert statements that modify cov_info...");
         branches.insertStatement();
         // insert statement to output the cov_info of this run
+        IOUtil.consoleMessage("insert print statement in the end...");
         insertOutPutStmt();
-        System.out.println(cu);
         // 创建新的java文件
         createNewJavaFile(fuzzTarget);
     }
@@ -82,8 +84,7 @@ public class HelloFuzzingInstrument {
             }
         }
         mainEntry.getBody().ifPresent(blockStmt -> {
-            blockStmt.addStatement(StmtGen.GenExpressionStmt("System.out.println()"));
-            blockStmt.addStatement(StmtGen.GenExpressionStmt("System.out.print(cov_info)"));
+            blockStmt.addStatement(StmtGen.GenPrintCovArrayStatement());
         });
     }
 

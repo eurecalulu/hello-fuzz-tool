@@ -21,23 +21,27 @@ public final class IOUtil {
 
         if (file.exists()) {
             if (file.delete()) {
-                System.out.println("File deleted successfully.");
+                consoleMessage("File deleted successfully.");
             } else {
-                System.out.println("Failed to delete the file.");
+                consoleMessage("Failed to delete the file.");
             }
         } else {
-            System.out.println("File doesn't exist.");
+            consoleMessage("File doesn't exist.");
         }
 
         if(file.createNewFile()){
-            System.out.println("create file successfully!");
+            consoleMessage("create file successfully!");
         } else {
-            System.out.println("file create failed.");
+            consoleMessage("file create failed.");
         }
 
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(content);
         }
-        System.out.println("output to: "+filePath);
+        consoleMessage("output to: "+filePath);
+    }
+
+    public static void consoleMessage(String s){
+        System.out.println("[hellofuzzing-instrument]"+s);
     }
 }

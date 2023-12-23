@@ -3,6 +3,7 @@ package edu.nju.yd.components;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.stmt.*;
+import edu.nju.yd.util.IOUtil;
 import edu.nju.yd.visitor.collector.IfStmtCollector;
 import edu.nju.yd.visitor.collector.SwitchEntryCollector;
 import edu.nju.yd.visitor.generator.BlockStmtGen;
@@ -31,24 +32,30 @@ public class Branches {
         // get if-else
         IfStmtCollector ifStmtCollector = new IfStmtCollector();
         ifStmtCollector.visit(cu,this.ifElseStmts);
+        IOUtil.consoleMessage("find all if-else branches.");
         // change one statement to block statement and get if statement and else statement respectively
         changeOneStmtToBlock();
         //get switch entries
         SwitchEntryCollector switchEntryCollector = new SwitchEntryCollector();
         switchEntryCollector.visit(cu,this.switchEntries);
+        IOUtil.consoleMessage("find all switch branches.");
         this.num = ifStmts.size()+elseStmts.size()+switchEntries.size();
+        IOUtil.consoleMessage("find total "+this.num+" branches.");
     }
 
     public void insertStatement(){
         int flag = 0;
         for(BlockStmt ifStmt: this.ifStmts){
             ifStmt.addStatement(0, StmtGen.GenCovInfoChangeStatement(flag++));
+            ifStmt.addStatement(1, StmtGen.GenPrintCovArrayStatement());
         }
         for(BlockStmt elseStmt: this.elseStmts){
             elseStmt.addStatement(0,StmtGen.GenCovInfoChangeStatement(flag++));
+            elseStmt.addStatement(1,StmtGen.GenPrintCovArrayStatement());
         }
         for(SwitchEntry switchEntry:this.switchEntries){
             switchEntry.addStatement(0,StmtGen.GenCovInfoChangeStatement(flag++));
+            switchEntry.addStatement(1,StmtGen.GenPrintCovArrayStatement());
         }
     }
 

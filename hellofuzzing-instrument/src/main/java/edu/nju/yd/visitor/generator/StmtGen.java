@@ -27,4 +27,8 @@ public class StmtGen {
         expressionStmt.setExpression(s);
         return expressionStmt;
     }
+
+    public static ExpressionStmt GenPrintCovArrayStatement(){
+        return GenExpressionStmt("System.out.print(\"\\n\"+ new String(cov_info))");
+    }
 }
