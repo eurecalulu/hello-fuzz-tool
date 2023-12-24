@@ -19,8 +19,22 @@ def compile_java_source(java_file):
         print("编译错误: ", stderr.decode())
 
 
-def get_percent(output):  # 捕捉输出流的最后11位
-    return str(output[-11:]).count("1") / 11
+def get_percent(output, perc):
+    res = ((str(output)).split("\\n"))[-1]
+    if perc == "":
+        return output
+    else:
+        temp = ""
+        flag = False
+        for i in range(len(output)):
+            if perc[i] == '1' or res[i] == '1':
+                temp += '1'
+            else:
+                temp += '0'
+            if output[i] == '1' and res[i] == '0':
+                flag = True
+    return temp, flag
+
 
 
 def run_java_command(class_name, seed):
@@ -32,7 +46,10 @@ def run_java_command(class_name, seed):
     # print(output)
     # print(error)
     # print(get_percent(output))
-    return get_percent(output)
+    if error != b'':
+        print("error !!!!!!!!!!!!!!!!\n\n\n\n\n")
+        print(error)
+    return output
 
 
 if __name__ == "__main__":
@@ -51,27 +68,29 @@ if __name__ == "__main__":
     # 种子覆盖率
     weights = []
     for seed in seeds:
-        weights.append(run_java_command(class_name, seed))
+        weights.append(get_percent(run_java_command(class_name, seed), ""))
 
     # 开始循环
-    init_perc = 0.0
+    init_perc = ""
 
     print("初始种子", seeds, weights)
 
+    # 变异长度
+    mut_len = 1
     while True:
         # 种子调度
         input_str_1, input_str_2 = schedule(seeds, weights)
 
         # 变异
-        input_list = mutation(input_str_1, input_str_2, 1)
-        
-        # 计算覆盖率
-        perc = run_java_command(class_name, input_list[0])
-        
-        # 更新最优覆盖率
-        if perc > init_perc:  # 更新队列
-            init_perc = perc
-            seeds.append(input_list[0])
-            weights.append(perc)
+        input_list = mutation(input_str_1, input_str_2, mut_len)
+        for i in range(mut_len):
+            # 计算覆盖率
+            perc, flag = get_percent(run_java_command(class_name, input_list[i]), init_perc)
 
-            print(seeds, weights)
+            # 更新最优覆盖率
+            if flag:  # 更新队列
+                init_perc = perc
+                seeds.append(input_list[i])
+                weights.append(perc)
+
+                print(seeds, weights)
