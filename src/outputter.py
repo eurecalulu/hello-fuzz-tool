@@ -22,7 +22,7 @@ class Outputter:
 
     def init_csv(self):
         # 创建数据框
-        headers = ["id", "seed", "cover_percent","error"]
+        headers = ["id", "seed", "cover_percent", "error", "output"]
 
         # 创建数据行
         df = pd.DataFrame(columns=headers)
@@ -64,7 +64,7 @@ class Outputter:
         df = pd.read_csv(self.seeds_csv_path, )
         
         # 创建新的数据行
-        data = ["SEED" + str(self.output_idx).zfill(10), seed.get_name(), seed.get_percent(), seed.get_error()]
+        data = ["SEED" + str(self.output_idx).zfill(10), seed.get_name(), seed.get_percent(), seed.get_error(), seed.get_output()]
         new_row = pd.Series(data, index=df.columns)
 
         # 将新行追加到数据框中

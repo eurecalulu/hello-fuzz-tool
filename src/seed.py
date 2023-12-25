@@ -4,10 +4,11 @@ sys.path.append("")
 
 from config.config import alpha
 class Seed:
-    def __init__(self, name, percent, cover_path, error):
+    def __init__(self, name, percent, cover_path, output, error):
         self.name = name
         self.percent = percent
         self.cover_path = cover_path
+        self.output = output
         self.error = error
 
         # 有效变异次数，初始值为1
@@ -35,6 +36,9 @@ class Seed:
 
     def get_cover_path(self):
         return self.cover_path
+
+    def get_output(self):
+        return self.output
 
     def get_error(self):
         return self.error

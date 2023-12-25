@@ -1,5 +1,0 @@
-id,seed,cover_percent,error
-SEED0000000000,h,0.0909090909090909,"Exception in thread ""main"" java.lang.ArrayIndexOutOfBoundsException: 1
-	at Target1HelloFuzzing.main(Target1HelloFuzzing.java:16)
-"
-SEED0000000002,ha,0.18181818181818182,

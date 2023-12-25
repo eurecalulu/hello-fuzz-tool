@@ -102,9 +102,13 @@ def print_seeds_information(seeds_information):
     for x in seeds_information:
         print(x)
 
-def run_java_command(class_name, input):
+def run_java_command(class_name, input, without_input = False):
     # 启动新进程并重定向输出流和错误流
-    java_command = ['java', class_name, input]
+    if(without_input):
+        java_command = ['java', class_name]
+    else:
+        java_command = ['java', class_name, input]
+
     process = subprocess.Popen(java_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # 读取输出流和错误流
@@ -125,6 +129,8 @@ if __name__ == "__main__":
     seeds_path = "./input/seeds.txt"
     # instrument_program_path = "./input/Target1HelloFuzzing.java"
     # class_name = "Target1HelloFuzzing"
+    argc = 1
+
 
     # 程序插装
     instrument_program_path, class_name = instrument(program_path)
@@ -159,7 +165,7 @@ if __name__ == "__main__":
         init_error_list, error_flag = update_error_list(init_error_list, err)
         
         if cover_path_flag or error_flag:
-            new_seed = Seed(seed, percent, cover_path, err)
+            new_seed = Seed(seed, percent, cover_path, output,err)
             seeds_information.append(new_seed)
 
             print(init_cover_path, cover_path)
@@ -176,6 +182,13 @@ if __name__ == "__main__":
             outputter.output_seed(new_seed)
 
         outputter.output(init_cover_path, init_error_list, seeds_information)
+
+    # 模拟参数为0的情况下的测试
+    output, err = run_java_command(class_name, "", True)
+    cover_path = get_cover_path(output)
+    percent = get_percent(cover_path)
+    init_cover_path, cover_path_flag = update_cover_path(init_cover_path, cover_path)
+    init_error_list, error_flag = update_error_list(init_error_list, err)
 
     
     # 开始进行模糊测试
@@ -199,7 +212,7 @@ if __name__ == "__main__":
 
             # 如果有新的报错或者新的路径覆盖，则加入到种子信息列表中
             if cover_path_flag or error_flag:
-                new_seed = Seed(input_list[i], percent, cover_path, err)
+                new_seed = Seed(input_list[i], percent, cover_path, output, err)
                 seeds_information.append(new_seed)
 
                 print(init_cover_path, cover_path)
