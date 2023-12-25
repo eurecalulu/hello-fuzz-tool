@@ -3,7 +3,7 @@ sys.path.append("..")
 sys.path.append("")
 
 import random
-from config.config import CANDIDATES
+from config.config import CANDIDATES, LARGEST_LENGTH
 
 # 变异算子会使用到的参数
 class Param:
@@ -88,8 +88,11 @@ def generate(input_str_1, input_str_2, times):
         # 创建上下文
         context = Context(op)
         
-        # 调用变异函数并保存结果
-        result.append(context.mutation(param))
+        # 调用变异函数
+        temp_result = context.mutation(param)
+        
+        # 保存结果
+        result.append(temp_result if len(temp_result) <= LARGEST_LENGTH else temp_result[:LARGEST_LENGTH])
         
     return result
 

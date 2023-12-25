@@ -1,0 +1,13 @@
+id,seed,cover_percent,error
+SEED0000000000,h,0.0909090909090909,"Exception in thread ""main"" java.lang.ArrayIndexOutOfBoundsException: 1
+	at Target1HelloFuzzing.main(Target1HelloFuzzing.java:16)
+"
+SEED0000000001,ha,0.1818181818181818,
+SEED0000000002,he,0.1818181818181818,"Exception in thread ""main"" java.lang.ArrayIndexOutOfBoundsException: 2
+	at Target1HelloFuzzing.main(Target1HelloFuzzing.java:20)
+"
+SEED0000000003,hea,0.2727272727272727,
+SEED0000000004,dhew,0.0909090909090909,
+SEED0000000005,,0.0,"Exception in thread ""main"" java.lang.ArrayIndexOutOfBoundsException: 0
+	at Target1HelloFuzzing.main(Target1HelloFuzzing.java:12)
+"

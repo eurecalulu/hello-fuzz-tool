@@ -1,32 +1,50 @@
 import random
-import math
+import sys
+sys.path.append("")
 
-def choose_seeds(seeds, weights):
-    """
-    选择种子列表
-    :param seeds: 种子列表
-    :param weight: 种子选择概率
-    :return: 两个种子
-    """
-    seeds_length= len(seeds)
+from config.config import K, T, T_MIN
 
-    if(seeds_length == 0):
-        return "", ""
-    elif(seeds_length == 1):
-        return seeds[0], seeds[0]
-    else:
-        x = random.choices(seeds, weights=weights, k=2)
-        return x[0], x[1]
 
-def schedule(seeds_information):
-    """
-    schedule模糊测试调度器
-    :param seeds_information: 种子对象列表
-    :return: 两个种子
-    """
-    weights = [math.exp(x.get_percent()) for x in seeds_information]
-    
-    return choose_seeds(seeds_information, weights)
+class Scheduler:
+    def __init__(self) -> None:
+        # 模拟退火的温度
+        self.T = T
+
+        # 模拟退火的降温系统
+        self.K = K
+
+
+    def choose_seeds(self, seeds, weights):
+        """
+        选择种子列表
+        :param seeds: 种子列表
+        :param weight: 种子选择概率
+        :return: 两个种子
+        """
+        seeds_length= len(seeds)
+
+        if(seeds_length == 0):
+            return "", ""
+        elif(seeds_length == 1):
+            return seeds[0], seeds[0]
+        else:
+            x = random.choices(seeds, weights=weights, k=2)
+            return x[0], x[1]
+
+    def schedule(self, seeds_information):
+        """
+        schedule模糊测试调度器
+        :param seeds_information: 种子对象列表
+        :return: 两个种子
+        """
+        # 计算每个种子的权重
+        weights = [x.get_weight(self.T) for x in seeds_information]
+
+        # 模拟退火降温
+        if(self.T >= T_MIN):    
+            self.T = self.K * self.T
+
+        return self.choose_seeds(seeds_information, weights)
 
 if __name__ == "__main__":
     pass

@@ -1,6 +1,6 @@
 import subprocess
 import os
-from scheduler import schedule
+from scheduler import Scheduler
 from generator import generate
 from instrumentor import instrument
 from outputter import Outputter
@@ -36,7 +36,14 @@ def get_cover_path(output):
     :param output: 程序运行结果
     :return: 覆盖路径
     """
-    return output.decode(encoding="gbk").split('\n')[-1]
+    if(output == ""):
+        return ""
+
+    # 说明产生了错误
+    if(output.split('\n')[-1] == ""):
+        return output.split('[TARGET]')[-2].split('\n')[-1]
+
+    return output.split('\n')[-1]
 
 
 def get_percent(cover_path):
@@ -108,7 +115,7 @@ def run_java_command(class_name, input):
     # if error != b'':
     #     print("ERROR:", error.decode(encoding="gbk"))
 
-    return output, error.decode(encoding="gbk")
+    return output.decode(encoding="gbk"), error.decode(encoding="gbk")
 
 if __name__ == "__main__":
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
@@ -137,30 +144,44 @@ if __name__ == "__main__":
     # 目前为止报过的错误
     init_error_list = []
 
+    # 输出器
+    outputter = Outputter()
+
+    # 调度器
+    scheduler = Scheduler()
     
     # 计算初始种子的覆盖路径
     for seed in seeds:
         output, err = run_java_command(class_name, seed)
         cover_path = get_cover_path(output)
         percent = get_percent(cover_path)
-        init_cover_path, _ = update_cover_path(init_cover_path, cover_path)
-        init_error_list, _ = update_error_list(init_error_list, err)
+        init_cover_path, cover_path_flag = update_cover_path(init_cover_path, cover_path)
+        init_error_list, error_flag = update_error_list(init_error_list, err)
+        
+        if cover_path_flag or error_flag:
+            new_seed = Seed(seed, percent, cover_path, err)
+            seeds_information.append(new_seed)
 
-        # print(output, percent)
-        seeds_information.append(Seed(seed, percent, cover_path, err))
+            print(init_cover_path, cover_path)
+            print(init_error_list)
+            print_seeds_information(seeds_information)
+        
 
-    
-    print_seeds_information(seeds_information)
-    print("初始覆盖路径:", init_cover_path)
-    
+            if cover_path_flag:
+                outputter.output_cover(new_seed)
+            
+            if error_flag:
+                outputter.output_error(new_seed)
+            
+            outputter.output_seed(new_seed)
 
-    # 输出器
-    outputter = Outputter()
+        outputter.output(init_cover_path, init_error_list, seeds_information)
+
     
     # 开始进行模糊测试
     while True:
         # 种子调度
-        input_seed_1, input_seed_2 = schedule(seeds_information)
+        input_seed_1, input_seed_2 = scheduler.schedule(seeds_information)
 
         # 获得输入和能量
         input_str_1, input_str_2, power = \
@@ -177,12 +198,25 @@ if __name__ == "__main__":
             init_error_list, error_flag = update_error_list(init_error_list, err)
 
             # 如果有新的报错或者新的路径覆盖，则加入到种子信息列表中
-            if cover_path_flag or error_flag:  
-                seeds_information.append(Seed(input_list[i], percent, cover_path, err))
+            if cover_path_flag or error_flag:
+                new_seed = Seed(input_list[i], percent, cover_path, err)
+                seeds_information.append(new_seed)
 
                 print(init_cover_path, cover_path)
                 print(init_error_list)
                 print_seeds_information(seeds_information)
             
+
+                if cover_path_flag:
+                    outputter.output_cover(new_seed)
+                
+                if error_flag:
+                    outputter.output_error(new_seed)
+
+                outputter.output_seed(new_seed)
+                # 产生了一次有效的变异
+                input_seed_1.add_one_valid_mutation_cnt()
+
+
             # 输出结果(把下面这个函数注释掉就可以看到想看的信息了)
-            # outputter.output(init_cover_path, init_error_list)
+            outputter.output(init_cover_path, init_error_list, seeds_information)

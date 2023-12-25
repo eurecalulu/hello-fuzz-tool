@@ -1,3 +1,18 @@
+# 模拟退火算法降温系统
+K = 0.9
+
+# 模拟退火初始温度
+T = 10
+
+# 模拟退火最低温度
+T_MIN = 0.01
+
+# 模拟退火权重
+alpha = 0.2
+
+# 变异后的最大字符长度
+LARGEST_LENGTH=5
+
 # 允许使用数字
 USE_NUMBER=False
 
@@ -32,7 +47,3 @@ else:
 
 
 print("CANDIDATES: ", CANDIDATES)
-
-# 限制最大的字符串长度
-
-# 限制固定长度
