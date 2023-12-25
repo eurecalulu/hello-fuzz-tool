@@ -32,3 +32,7 @@ else:
 
 
 print("CANDIDATES: ", CANDIDATES)
+
+# 限制最大的字符串长度
+
+# 限制固定长度

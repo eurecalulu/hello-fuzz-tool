@@ -91,7 +91,7 @@ def generate(input_str_1, input_str_2, times):
         # 调用变异函数并保存结果
         result.append(context.mutation(param))
         
-    return list(set(result))
+    return result
 
 def random_chr(candidates):
     """

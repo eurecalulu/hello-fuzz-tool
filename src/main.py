@@ -3,6 +3,8 @@ import os
 from scheduler import schedule
 from generator import generate
 from instrumentor import instrument
+from outputter import Outputter
+from seed import Seed
 
 def compile_java_source(java_file):
     # 使用javac命令编译Java源代码
@@ -88,6 +90,11 @@ def update_error_list(init_error_list, err):
     else:
         return init_error_list, False
 
+def print_seeds_information(seeds_information):
+    print("打印种子信息:")
+    for x in seeds_information:
+        print(x)
+
 def run_java_command(class_name, input):
     # 启动新进程并重定向输出流和错误流
     java_command = ['java', class_name, input]
@@ -103,7 +110,6 @@ def run_java_command(class_name, input):
 
     return output, error.decode(encoding="gbk")
 
-
 if __name__ == "__main__":
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
     
@@ -112,7 +118,6 @@ if __name__ == "__main__":
     seeds_path = "./input/seeds.txt"
     # instrument_program_path = "./input/Target1HelloFuzzing.java"
     # class_name = "Target1HelloFuzzing"
-
 
     # 程序插装
     instrument_program_path, class_name = instrument(program_path)
@@ -123,7 +128,7 @@ if __name__ == "__main__":
     # 读取种子队列
     seeds = open(seeds_path, encoding="utf-8").read().split('\n')
     
-    # 种子信息列表, 四元组(seed, 覆盖率, 覆盖路径, 报错信息)
+    # 种子信息列表, 存储了种子对象
     seeds_information = []
 
     # 目前为止最大的覆盖路径
@@ -132,6 +137,7 @@ if __name__ == "__main__":
     # 目前为止报过的错误
     init_error_list = []
 
+    
     # 计算初始种子的覆盖路径
     for seed in seeds:
         output, err = run_java_command(class_name, seed)
@@ -141,24 +147,29 @@ if __name__ == "__main__":
         init_error_list, _ = update_error_list(init_error_list, err)
 
         # print(output, percent)
-        seeds_information.append((seed, percent, cover_path, err))
+        seeds_information.append(Seed(seed, percent, cover_path, err))
 
-    print("初始种子信息", seeds_information)
-    print("初始覆盖路径", init_cover_path)
-
-    # 变异长度
-    mut_len = 1
+    
+    print_seeds_information(seeds_information)
+    print("初始覆盖路径:", init_cover_path)
     
 
+    # 输出器
+    outputter = Outputter()
+    
     # 开始进行模糊测试
     while True:
         # 种子调度
-        input_str_1, input_str_2 = schedule(seeds_information)
+        input_seed_1, input_seed_2 = schedule(seeds_information)
+
+        # 获得输入和能量
+        input_str_1, input_str_2, power = \
+            input_seed_1.get_name(), input_seed_2.get_name(), input_seed_1.get_power()
 
         # 变异，得到新的输入，输入长度为mut_len
-        input_list = generate(input_str_1, input_str_2, mut_len)
+        input_list = generate(input_str_1, input_str_2, power)
         
-        for i in range(mut_len):
+        for i in range(power):
             output, err = run_java_command(class_name, input_list[i])
             cover_path = get_cover_path(output)
             percent = get_percent(cover_path)
@@ -167,8 +178,11 @@ if __name__ == "__main__":
 
             # 如果有新的报错或者新的路径覆盖，则加入到种子信息列表中
             if cover_path_flag or error_flag:  
-                seeds_information.append((input_list[i], percent, cover_path, err))
+                seeds_information.append(Seed(input_list[i], percent, cover_path, err))
 
                 print(init_cover_path, cover_path)
                 print(init_error_list)
-                print(seeds_information)
+                print_seeds_information(seeds_information)
+            
+            # 输出结果(把下面这个函数注释掉就可以看到想看的信息了)
+            # outputter.output(init_cover_path, init_error_list)

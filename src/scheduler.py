@@ -21,13 +21,13 @@ def choose_seeds(seeds, weights):
 def schedule(seeds_information):
     """
     schedule模糊测试调度器
-    :param seeds_information: 种子信息四元组列表(seed, 覆盖率, 覆盖路径, 报错信息)
+    :param seeds_information: 种子对象列表
     :return: 两个种子
     """
-    seeds = [x[0] for x in seeds_information]
-    weights = [math.exp(x[1]) for x in seeds_information]
+    weights = [math.exp(x.get_percent()) for x in seeds_information]
     
-    return choose_seeds(seeds, weights)
+    return choose_seeds(seeds_information, weights)
 
 if __name__ == "__main__":
-    print(schedule(["abcABC"], [1], 1000))
+    pass
+    # print(schedule(["abcABC"], [1], 1000))
