@@ -34,19 +34,24 @@ class Outputter:
         sys.stdout.write("\033[2J\033[H")  # ANSI 清屏码
         sys.stdout.flush()
 
-    def output(self, cover_path, error_list, seeds_information):
-        self.clear_console()
+    def output(self, stdscr, cover_path, error_list, seeds_information):
+        stdscr.clear()
 
         self.round += 1
         pass_time = round(time.time() - self.begin_time)
         
-        sys.stdout.write(f"Round: {self.round}\n")
-        sys.stdout.write(f"Pass Time: {pass_time}s\n")
-        sys.stdout.write(f"Error List: {len(error_list)}\n")
-        sys.stdout.write(f"Cover Path: {cover_path}\n")
-        sys.stdout.write(f"Seeds Length: {len(seeds_information)}\n")
+        # sys.stdout.write()
+        # sys.stdout.write()
+        # sys.stdout.write()
+        # sys.stdout.write()
+        # sys.stdout.write()
 
-        sys.stdout.flush()
+        stdscr.addstr(0, 0, f"Round: {self.round}\n")
+        stdscr.addstr(1, 0, f"Pass Time: {pass_time}s\n")
+        stdscr.addstr(2, 0, f"Error List: {len(error_list)}\n")
+        stdscr.addstr(3, 0, f"Cover Path: {cover_path}\n")
+        stdscr.addstr(4, 0, f"Seeds Length: {len(seeds_information)}\n")
+        stdscr.refresh()
 
     def output_to_file(self, seed, path):
         fp = open(path + "SEED" + str(self.output_idx).zfill(10) + ".txt", "w", encoding="utf-8")

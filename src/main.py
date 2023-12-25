@@ -5,6 +5,10 @@ from generator import generate
 from instrumentor import instrument
 from outputter import Outputter
 from seed import Seed
+from datetime import datetime
+import time
+import curses
+import random
 
 def compile_java_source(java_file):
     # 使用javac命令编译Java源代码
@@ -121,7 +125,8 @@ def run_java_command(class_name, input, without_input = False):
 
     return output.decode(encoding="gbk"), error.decode(encoding="gbk")
 
-if __name__ == "__main__":
+
+def main(stdscr):
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
     
     # 程序路径
@@ -129,7 +134,6 @@ if __name__ == "__main__":
     seeds_path = "./input/seeds.txt"
     # instrument_program_path = "./input/Target1HelloFuzzing.java"
     # class_name = "Target1HelloFuzzing"
-    argc = 1
 
 
     # 程序插装
@@ -165,12 +169,12 @@ if __name__ == "__main__":
         init_error_list, error_flag = update_error_list(init_error_list, err)
         
         if cover_path_flag or error_flag:
-            new_seed = Seed(seed, percent, cover_path, output,err)
+            new_seed = Seed(seed, percent, cover_path, output, err, 1000)
             seeds_information.append(new_seed)
 
-            print(init_cover_path, cover_path)
-            print(init_error_list)
-            print_seeds_information(seeds_information)
+            # print(init_cover_path, cover_path)
+            # print(init_error_list)
+            # print_seeds_information(seeds_information)
         
 
             if cover_path_flag:
@@ -181,7 +185,7 @@ if __name__ == "__main__":
             
             outputter.output_seed(new_seed)
 
-        outputter.output(init_cover_path, init_error_list, seeds_information)
+        outputter.output(stdscr, init_cover_path, init_error_list, seeds_information)
 
     # 模拟参数为0的情况下的测试
     output, err = run_java_command(class_name, "", True)
@@ -203,6 +207,7 @@ if __name__ == "__main__":
         # 变异，得到新的输入，输入长度为mut_len
         input_list = generate(input_str_1, input_str_2, power)
         
+        time_1 = time.time() * 1000
         for i in range(power):
             output, err = run_java_command(class_name, input_list[i])
             cover_path = get_cover_path(output)
@@ -212,12 +217,12 @@ if __name__ == "__main__":
 
             # 如果有新的报错或者新的路径覆盖，则加入到种子信息列表中
             if cover_path_flag or error_flag:
-                new_seed = Seed(input_list[i], percent, cover_path, output, err)
+                new_seed = Seed(input_list[i], percent, cover_path, output, err, 1000)
                 seeds_information.append(new_seed)
 
-                print(init_cover_path, cover_path)
-                print(init_error_list)
-                print_seeds_information(seeds_information)
+                # print(init_cover_path, cover_path)
+                # print(init_error_list)
+                # print_seeds_information(seeds_information)
             
 
                 if cover_path_flag:
@@ -230,6 +235,12 @@ if __name__ == "__main__":
                 # 产生了一次有效的变异
                 input_seed_1.add_one_valid_mutation_cnt()
 
-
             # 输出结果(把下面这个函数注释掉就可以看到想看的信息了)
-            outputter.output(init_cover_path, init_error_list, seeds_information)
+            outputter.output(stdscr, init_cover_path, init_error_list, seeds_information)
+        time_2 = time.time() * 1000
+        input_seed_1.set_exec_ms((time_2 - time_1) / power)
+
+if __name__ == "__main__":
+    # random.seed(time.time())
+    # random.seed(2023)
+    curses.wrapper(main)

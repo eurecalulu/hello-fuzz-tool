@@ -2,16 +2,16 @@ import random
 import sys
 sys.path.append("")
 
-from config.config import K, T, T_MIN
+from config.config import SCHEDULER_T, SCHEDULER_K, SCHEDULER_T_MIN
 
 
 class Scheduler:
     def __init__(self) -> None:
         # 模拟退火的温度
-        self.T = T
+        self.T = SCHEDULER_T
 
         # 模拟退火的降温系统
-        self.K = K
+        self.K = SCHEDULER_K
 
 
     def choose_seeds(self, seeds, weights):
@@ -41,10 +41,12 @@ class Scheduler:
         weights = [x.get_weight(self.T) for x in seeds_information]
 
         # 模拟退火降温
-        if(self.T >= T_MIN):    
+        if(self.T >= SCHEDULER_T_MIN):    
             self.T = self.K * self.T
 
-        return self.choose_seeds(seeds_information, weights)
+        seed_1, seed_2 = self.choose_seeds(seeds_information, weights)
+        seed_1.cal_power()
+        return seed_1, seed_2
 
 if __name__ == "__main__":
     pass

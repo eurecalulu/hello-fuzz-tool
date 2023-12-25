@@ -4,7 +4,7 @@ sys.path.append("")
 
 from config.config import alpha
 class Seed:
-    def __init__(self, name, percent, cover_path, output, error):
+    def __init__(self, name, percent, cover_path, output, error, exec_ms):
         self.name = name
         self.percent = percent
         self.cover_path = cover_path
@@ -12,13 +12,47 @@ class Seed:
         self.error = error
 
         # 有效变异次数，初始值为1
-        self.valid_mutation_cnt = 1 
+        self.valid_mutation_cnt = 1
 
-        self.power = self.cal_power()
+        # 启发式计算power的参数
+        self.exec_ms = exec_ms
+        self.handicap = 16
+        self.depth = sum(1 for x in cover_path if x == '1')
+
+        self.cal_power()
 
     def cal_power(self):
-        return 10
-    
+        self.power = 5
+
+        if(self.exec_ms <= 100):
+            self.power *= 2.0
+        elif(100 <= self.exec_ms <= 200):
+            self.power *= 1.5
+        
+
+        if(self.handicap >= 4):
+            self.power *= 4
+            self.handicap -= 4
+        elif(self.handicap >= 2):
+            self.power *= 2
+            self.handicap -= 1
+
+        if(0 <= self.depth and self.depth <= 3):
+            pass
+        elif(4 <= self.depth and self.depth <= 7):
+            self.power *= 2
+        elif(8 <= self.depth and self.depth <= 13):
+            self.power *= 3
+        elif(14 <= self.depth and self.depth <= 25):
+            self.power *= 4
+        else:
+            self.power *= 5
+
+        self.power = int(self.power)
+
+    def set_exec_ms(self, exec_ms):
+        self.exec_ms = exec_ms
+
     def add_one_valid_mutation_cnt(self):
         self.valid_mutation_cnt += 1
 
