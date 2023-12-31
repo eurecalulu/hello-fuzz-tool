@@ -1,7 +1,6 @@
 import os
 import time
 import sys
-import curses
 import pandas as pd
 
 
@@ -39,12 +38,6 @@ class Outputter:
 
         self.round += 1
         pass_time = round(time.time() - self.begin_time)
-        
-        # sys.stdout.write()
-        # sys.stdout.write()
-        # sys.stdout.write()
-        # sys.stdout.write()
-        # sys.stdout.write()
 
         stdscr.addstr(0, 0, f"Round: {self.round}\n")
         stdscr.addstr(1, 0, f"Pass Time: {pass_time}s\n")
@@ -66,7 +59,7 @@ class Outputter:
 
     def output_seed(self, seed):
         # 读取 CSV 文件
-        df = pd.read_csv(self.seeds_csv_path, )
+        df = pd.read_csv(self.seeds_csv_path)
         
         # 创建新的数据行
         data = ["SEED" + str(self.output_idx).zfill(10), seed.get_name(), seed.get_percent(), seed.get_error(), seed.get_output()]

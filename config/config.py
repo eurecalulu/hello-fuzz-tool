@@ -1,3 +1,9 @@
+# 程序路径
+program_path = "./input/Target1.java"
+
+# 种子路径
+seeds_path = "./input/seeds.txt"
+
 # 种子调度模拟退火算法降温因子
 SCHEDULER_K = 0.9
 
@@ -7,8 +13,8 @@ SCHEDULER_T = 10
 # 种子调度模拟退火最低温度
 SCHEDULER_T_MIN = 0.01
 
-# 模拟退火权重因子
-alpha = 0.2
+# 权重因子，影响种子的选择概率
+alpha = 0.5
 
 # 变异后的最大字符长度
 LARGEST_LENGTH=5

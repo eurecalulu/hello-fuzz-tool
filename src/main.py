@@ -5,10 +5,10 @@ from generator import generate
 from instrumentor import instrument
 from outputter import Outputter
 from seed import Seed
-from datetime import datetime
 import time
 import curses
-import random
+from config.config import program_path, seeds_path
+
 
 def compile_java_source(java_file):
     # 使用javac命令编译Java源代码
@@ -128,13 +128,6 @@ def run_java_command(class_name, input, without_input = False):
 
 def main(stdscr):
     # 先在hellofuzzing-instrument目录下运行 mvn clean package
-    
-    # 程序路径
-    program_path = "./input/Target1.java"
-    seeds_path = "./input/seeds.txt"
-    # instrument_program_path = "./input/Target1HelloFuzzing.java"
-    # class_name = "Target1HelloFuzzing"
-
 
     # 程序插装
     instrument_program_path, class_name = instrument(program_path)

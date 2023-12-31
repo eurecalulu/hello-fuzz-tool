@@ -26,11 +26,10 @@ class Seed:
 
         if(self.exec_ms <= 100):
             self.power *= 2.0
-        elif(100 <= self.exec_ms <= 200):
+        elif(100 < self.exec_ms <= 200):
             self.power *= 1.5
-        
 
-        if(self.handicap >= 4):
+        if(self.handicap > 4):
             self.power *= 4
             self.handicap -= 4
         elif(self.handicap >= 2):
